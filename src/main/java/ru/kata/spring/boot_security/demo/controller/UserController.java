@@ -61,23 +61,21 @@ public class UserController {
                           BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("users", userService.getAllUsers());
-            model.addAttribute("allRoles", roleRepository.findAll());
             return "users";
         }
 
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             bindingResult.rejectValue("password", "error.password", "Пароль обязателен!");
             model.addAttribute("users", userService.getAllUsers());
-            model.addAttribute("allRoles", roleRepository.findAll());
             return "users";
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            Role userRole = roleRepository.findByName("USER")
-                    .orElseThrow(() -> new RuntimeException("Role USER not found"));
-            user.setRoles(Set.of(userRole));
-        }
+
+        Role userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new RuntimeException("Role USER not found"));
+        user.setRoles(Set.of(userRole));
+
         userService.addUser(user);
         return "redirect:/admin/users";
     }
