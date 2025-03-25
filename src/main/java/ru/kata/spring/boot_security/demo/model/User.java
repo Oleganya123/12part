@@ -19,11 +19,12 @@ public class User implements UserDetails {
     private String name;
 
     @NotBlank(message = "Фамилия не может быть пустой")
+    @Pattern(regexp = "^[a-zA-Zа-яА-ЯёЁ\\s-]+$", message = "Фамилия может содержать только буквы и дефисы")
     private String lastName;
 
     @NotNull(message = "Возраст не может быть пустым")
     @Min(value = 1, message = "Возраст должен быть положительным")
-    private Integer age;
+    private int age;
 
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Некорректный формат email")
@@ -50,10 +51,10 @@ public class User implements UserDetails {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-    public Integer getAge() {
+    public int getAge() {
         return age;
     }
-    public void setAge(Integer age) {
+    public void setAge(int age) {
         this.age = age;
     }
     public String getEmail() { return email; }

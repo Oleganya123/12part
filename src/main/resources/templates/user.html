@@ -10,9 +10,37 @@
 <div class="container mt-5">
     <h1 class="text-center">Добро пожаловать, <span sec:authentication="name"></span>!</h1>
 
-    <p class="lead">Ваши роли: <span sec:authentication="principal.authorities"></span></p>
+    <p class="lead">Ваши роли:
+        <span th:each="auth : ${#authentication.getAuthorities()}"
+              th:text="${#strings.replace(auth.getAuthority(), 'ROLE_', '')} +
+                  (${#lists.size(#authentication.getAuthorities())} ? ', ' : '')">
+    </span>
+    </p>
 
-    <p class="lead">Ваш возраст: <span sec:authentication="principal.age"></span></p>
+    <h3 class="mt-5">Информация о пользователе:</h3>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Имя</th>
+            <th>Фамилия</th>
+            <th>Возраст</th>
+            <th>Email</th>
+            <th>Роли</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td th:text="${user.name}">User</td>
+            <td th:text="${user.lastName}">Userov</td>
+            <td th:text="${user.age}">24</td>
+            <td th:text="${user.email}">user@mail.ru</td>
+            <td>
+                <span sec:authorize="hasRole('ADMIN')" th:text="'ADMIN'"></span>
+                <span sec:authorize="hasRole('USER')" th:text="'USER'"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
     <div sec:authorize="hasRole('ADMIN')" class="mb-4">
         <p><a class="btn btn-info" th:href="@{/admin}">Перейти в панель администратора</a></p>

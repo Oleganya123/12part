@@ -1,7 +1,7 @@
 package ru.kata.spring.boot_security.demo.controller;
 
-import jdk.internal.icu.impl.Punycode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,10 +19,12 @@ import java.security.Principal;
 @Controller
 public class UserController {
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/admin")
@@ -52,21 +54,23 @@ public class UserController {
             model.addAttribute("users", userService.getAllUsers());
             return "users";
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            bindingResult.rejectValue("password", "error.password", "Пароль обязателен!");  // Добавляем ошибку для поля пароля
+        }
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("users", userService.getAllUsers());
+            return "users";
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.addUser(user);
         return "redirect:/admin/users";
     }
 
     @PostMapping("/admin/users/update")
-    public String updateUser(
-            @RequestParam("id") Long id,
-            @RequestParam("name") String name,
-            @RequestParam("email") String email
-    ) {
-        User user = userService.getUserById(id);
-        user.setName(name);
-        user.setEmail(email);
+    public String updateUser(@ModelAttribute("user") User user) {
         userService.updateUser(user);
         return "redirect:/admin/users";
     }
