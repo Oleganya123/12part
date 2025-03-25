@@ -56,10 +56,7 @@ public class UserController {
         }
 
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            bindingResult.rejectValue("password", "error.password", "Пароль обязателен!");  // Добавляем ошибку для поля пароля
-        }
-
-        if (bindingResult.hasErrors()) {
+            bindingResult.rejectValue("password", "error.password", "Пароль обязателен!");
             model.addAttribute("users", userService.getAllUsers());
             return "users";
         }
@@ -71,6 +68,9 @@ public class UserController {
 
     @PostMapping("/admin/users/update")
     public String updateUser(@ModelAttribute("user") User user) {
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword())); // 🔐
+        }
         userService.updateUser(user);
         return "redirect:/admin/users";
     }
