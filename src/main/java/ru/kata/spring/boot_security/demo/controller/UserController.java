@@ -67,10 +67,24 @@ public class UserController {
     }
 
     @PostMapping("/admin/users/update")
-    public String updateUser(@ModelAttribute("user") User user) {
-        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(user.getPassword())); // 🔐
+    public String updateUser(
+            @RequestParam("id") Long id,
+            @RequestParam("name") String name,
+            @RequestParam("lastName") String lastName,
+            @RequestParam("age") int age,
+            @RequestParam("email") String email,
+            @RequestParam(value = "password", required = false) String password
+    ) {
+        User user = userService.getUserById(id);
+        user.setName(name);
+        user.setLastName(lastName);
+        user.setAge(age);
+        user.setEmail(email);
+
+        if (password != null && !password.isEmpty()) {
+            user.setPassword(passwordEncoder.encode(password));
         }
+
         userService.updateUser(user);
         return "redirect:/admin/users";
     }

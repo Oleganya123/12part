@@ -58,6 +58,7 @@
                 <th>Last Name</th>
                 <th>Age</th>
                 <th>Email</th>
+                <th>Roles</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -69,12 +70,21 @@
                 <td th:text="${user.age}"></td>
                 <td th:text="${user.email}"></td>
                 <td>
+                    <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+        <span th:each="role : ${user.roles}"
+              th:text="${role.name}"
+              style="background: #e0e0e0; padding: 2px 6px; border-radius: 4px;">
+        </span>
+                    </div>
+                </td>
+                <td>
                     <form th:action="@{/admin/users/update}" method="post" class="d-inline-block">
                         <input type="hidden" name="id" th:value="${user.id}">
                         <input type="text" name="name" th:value="${user.name}" class="form-control mb-2">
                         <input type="text" name="lastName" th:value="${user.lastName}" class="form-control mb-2">
                         <input type="number" name="age" th:value="${user.age}" class="form-control mb-2">
                         <input type="text" name="email" th:value="${user.email}" class="form-control mb-2">
+                        <input type="password" name="password" placeholder=" " class="form-control mb-2">
                         <button type="submit" class="btn btn-warning btn-sm">Update</button>
                     </form>
 
