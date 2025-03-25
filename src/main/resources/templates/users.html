@@ -8,20 +8,27 @@
 </head>
 <body>
 <div sec:authorize="!hasRole('ADMIN')" class="alert alert-danger">
-    <<h1>Доступ запрещён!</h1>
+    <h1>Доступ запрещён!</h1>
     <a th:href="@{/logout}" class="btn btn-danger">Выйти</a>
 </div>
 
 <div sec:authorize="hasRole('ADMIN')">
     <div class="container mt-5">
-        <h1>Users Management</h1>
-
+        <h1>Admin Panel</h1>
 
         <form th:action="@{/admin/users/add}" th:object="${user}" method="post">
             <h2>Add User</h2>
             <div class="form-group">
                 <label>Name: <input type="text" th:field="*{name}" class="form-control"></label>
                 <span class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </div>
+            <div class="form-group">
+                <label>Last Name: <input type="text" th:field="*{lastName}" class="form-control"></label>
+                <span class="text-danger" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></span>
+            </div>
+            <div class="form-group">
+                <label>Age: <input type="number" th:field="*{age}" class="form-control"></label>
+                <span class="text-danger" th:if="${#fields.hasErrors('age')}" th:errors="*{age}"></span>
             </div>
             <div class="form-group">
                 <label>Email: <input type="text" th:field="*{email}" class="form-control"></label>
@@ -33,32 +40,38 @@
         <h2 class="mt-5">User List</h2>
         <table class="table table-bordered">
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Actions</th>
-                </tr>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Last Name</th>
+                <th>Age</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
             </thead>
             <tbody>
-                <tr th:each="user : ${users}">
-                    <td th:text="${user.id}"></td>
-                    <td th:text="${user.name}"></td>
-                    <td th:text="${user.email}"></td>
-                    <td>
-                        <form th:action="@{/admin/users/update}" method="post" class="d-inline-block">
-                            <input type="hidden" name="id" th:value="${user.id}">
-                            <input type="text" name="name" th:value="${user.name}" class="form-control mb-2">
-                            <input type="text" name="email" th:value="${user.email}" class="form-control mb-2">
-                            <button type="submit" class="btn btn-warning btn-sm">Update</button>
-                        </form>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}"></td>
+                <td th:text="${user.name}"></td>
+                <td th:text="${user.lastName}"></td>
+                <td th:text="${user.age}"></td>
+                <td th:text="${user.email}"></td>
+                <td>
+                    <form th:action="@{/admin/users/update}" method="post" class="d-inline-block">
+                        <input type="hidden" name="id" th:value="${user.id}">
+                        <input type="text" name="name" th:value="${user.name}" class="form-control mb-2">
+                        <input type="text" name="lastName" th:value="${user.lastName}" class="form-control mb-2">
+                        <input type="number" name="age" th:value="${user.age}" class="form-control mb-2">
+                        <input type="text" name="email" th:value="${user.email}" class="form-control mb-2">
+                        <button type="submit" class="btn btn-warning btn-sm">Update</button>
+                    </form>
 
-                        <form class="d-inline-block" th:action="@{/admin/users/delete}" method="post">
-                            <input type="hidden" name="id" th:value="${user.id}">
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </form>
-                    </td>
-                </tr>
+                    <form class="d-inline-block" th:action="@{/admin/users/delete}" method="post">
+                        <input type="hidden" name="id" th:value="${user.id}">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
             </tbody>
         </table>
 

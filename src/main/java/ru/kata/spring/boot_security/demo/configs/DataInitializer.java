@@ -35,6 +35,8 @@ public class DataInitializer implements CommandLineRunner {
         if (userRepository.findByEmail("admin@mail.ru").isEmpty()) {
             User admin = new User();
             admin.setName("Admin");
+            admin.setLastName("Adminov");
+            admin.setAge(28);
             admin.setEmail("admin@mail.ru");
             admin.setPassword(passwordEncoder.encode("admin"));
             admin.setRoles(Set.of(adminRole, userRole));
@@ -43,6 +45,8 @@ public class DataInitializer implements CommandLineRunner {
             if (userRepository.findByEmail("user@mail.ru").isEmpty()) {
                 User user = new User();
                 user.setName("User");
+                user.setLastName("Userov");
+                user.setAge(24);
                 user.setEmail("user@mail.ru");
                 user.setPassword(passwordEncoder.encode("user"));
                 user.setRoles(Set.of(userRole));

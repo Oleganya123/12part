@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.controller;
 
+import jdk.internal.icu.impl.Punycode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,6 +52,8 @@ public class UserController {
             model.addAttribute("users", userService.getAllUsers());
             return "users";
         }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
         userService.addUser(user);
         return "redirect:/admin/users";
     }

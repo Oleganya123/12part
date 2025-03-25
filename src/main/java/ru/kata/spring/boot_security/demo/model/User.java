@@ -18,6 +18,13 @@ public class User implements UserDetails {
     @Pattern(regexp = "^[a-zA-Zа-яА-ЯёЁ\\s-]+$", message = "Имя может содержать только буквы и дефисы")
     private String name;
 
+    @NotBlank(message = "Фамилия не может быть пустой")
+    private String lastName;
+
+    @NotNull(message = "Возраст не может быть пустым")
+    @Min(value = 1, message = "Возраст должен быть положительным")
+    private Integer age;
+
     @NotBlank(message = "Email не может быть пустым")
     @Email(message = "Некорректный формат email")
     @Column(unique = true)
@@ -37,6 +44,18 @@ public class User implements UserDetails {
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getLastName() {
+        return lastName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    public Integer getAge() {
+        return age;
+    }
+    public void setAge(Integer age) {
+        this.age = age;
+    }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public Set<Role> getRoles() { return roles; }

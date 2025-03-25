@@ -12,6 +12,8 @@
 
     <p class="lead">Ваши роли: <span sec:authentication="principal.authorities"></span></p>
 
+    <p class="lead">Ваш возраст: <span sec:authentication="principal.age"></span></p>
+
     <div sec:authorize="hasRole('ADMIN')" class="mb-4">
         <p><a class="btn btn-info" th:href="@{/admin}">Перейти в панель администратора</a></p>
     </div>
