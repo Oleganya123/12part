@@ -9,22 +9,30 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
+import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import jakarta.validation.*;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Controller
 public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     @GetMapping("/admin")
@@ -37,6 +45,7 @@ public class UserController {
     public String getAllUsers(Model model) {
         model.addAttribute("users", userService.getAllUsers());
         model.addAttribute("user", new User());
+        model.addAttribute("allRoles", roleRepository.findAll());
         return "users";
     }
 
@@ -52,16 +61,23 @@ public class UserController {
                           BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("users", userService.getAllUsers());
+            model.addAttribute("allRoles", roleRepository.findAll());
             return "users";
         }
 
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             bindingResult.rejectValue("password", "error.password", "Пароль обязателен!");
             model.addAttribute("users", userService.getAllUsers());
+            model.addAttribute("allRoles", roleRepository.findAll());
             return "users";
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            Role userRole = roleRepository.findByName("USER")
+                    .orElseThrow(() -> new RuntimeException("Role USER not found"));
+            user.setRoles(Set.of(userRole));
+        }
         userService.addUser(user);
         return "redirect:/admin/users";
     }
@@ -73,7 +89,8 @@ public class UserController {
             @RequestParam("lastName") String lastName,
             @RequestParam("age") int age,
             @RequestParam("email") String email,
-            @RequestParam(value = "password", required = false) String password
+            @RequestParam(value = "password", required = false) String password,
+            @RequestParam(value = "roles", required = false) List<Long> roleIds
     ) {
         User user = userService.getUserById(id);
         user.setName(name);
@@ -83,6 +100,17 @@ public class UserController {
 
         if (password != null && !password.isEmpty()) {
             user.setPassword(passwordEncoder.encode(password));
+        }
+
+        if (roleIds != null && !roleIds.isEmpty()) {
+            Set<Role> roles = roleIds.stream()
+                    .map(roleId -> roleRepository.findById(roleId).orElseThrow())
+                    .collect(Collectors.toSet());
+            user.setRoles(roles);
+        } else {
+            Role userRole = roleRepository.findByName("USER")
+                    .orElseThrow(() -> new RuntimeException("Role USER not found"));
+            user.setRoles(Set.of(userRole));
         }
 
         userService.updateUser(user);

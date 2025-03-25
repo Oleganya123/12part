@@ -48,8 +48,8 @@ public  class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void updateUser(User user) {
         userRepository.save(user);
     }

@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -66,6 +67,16 @@ public class User implements UserDetails {
     public void setRoles(Set<Role> roles) { this.roles = roles; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    @Transient
+    public Set<Long> getRoleIds() {
+        if (this.roles == null) {
+            return Collections.emptySet();
+        }
+        return this.roles.stream()
+                .map(role -> role.getId())
+                .collect(Collectors.toSet());
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
