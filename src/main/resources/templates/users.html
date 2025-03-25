@@ -3,72 +3,72 @@
       xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <meta charset="UTF-8">
-    <title>Users Management</title>
-    <style>
-        .error { color: red; }
-        table { border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 8px; border: 1px solid #ddd; }
-        .action-form { display: inline; }
-    </style>
+    <title>Admin Panel</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div sec:authorize="!hasRole('ADMIN')">
-    <h1 style="color: red">Доступ запрещён!</h1>
-    <a th:href="@{/logout}">Выйти</a>
+<div sec:authorize="!hasRole('ADMIN')" class="alert alert-danger">
+    <<h1>Доступ запрещён!</h1>
+    <a th:href="@{/logout}" class="btn btn-danger">Выйти</a>
 </div>
 
 <div sec:authorize="hasRole('ADMIN')">
-<h1>Users Management</h1>
+    <div class="container mt-5">
+        <h1>Users Management</h1>
 
-<form th:action="@{/admin/users/add}" th:object="${user}" method="post">
-    <h2>Add User</h2>
-    <div>
-        <label>Name: <input type="text" th:field="*{name}"></label>
-        <span class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+
+        <form th:action="@{/admin/users/add}" th:object="${user}" method="post">
+            <h2>Add User</h2>
+            <div class="form-group">
+                <label>Name: <input type="text" th:field="*{name}" class="form-control"></label>
+                <span class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </div>
+            <div class="form-group">
+                <label>Email: <input type="text" th:field="*{email}" class="form-control"></label>
+                <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+            </div>
+            <button type="submit" class="btn btn-success">Add User</button>
+        </form>
+
+        <h2 class="mt-5">User List</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="user : ${users}">
+                    <td th:text="${user.id}"></td>
+                    <td th:text="${user.name}"></td>
+                    <td th:text="${user.email}"></td>
+                    <td>
+                        <form th:action="@{/admin/users/update}" method="post" class="d-inline-block">
+                            <input type="hidden" name="id" th:value="${user.id}">
+                            <input type="text" name="name" th:value="${user.name}" class="form-control mb-2">
+                            <input type="text" name="email" th:value="${user.email}" class="form-control mb-2">
+                            <button type="submit" class="btn btn-warning btn-sm">Update</button>
+                        </form>
+
+                        <form class="d-inline-block" th:action="@{/admin/users/delete}" method="post">
+                            <input type="hidden" name="id" th:value="${user.id}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-danger">Logout</button>
+        </form>
     </div>
-    <div>
-        <label>Email: <input type="text" th:field="*{email}"></label>
-        <span class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
-    </div>
-    <button type="submit">Add</button>
-</form>
-
-<h2>User List</h2>
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="user : ${users}">
-        <td th:text="${user.id}"></td>
-        <td th:text="${user.name}"></td>
-        <td th:text="${user.email}"></td>
-        <td>
-
-            <form th:action="@{/admin/users/update}" method="post" class="action-form">
-                <input type="hidden" name="id" th:value="${user.id}">
-                <input type="text" name="name" th:value="${user.name}">
-                <input type="text" name="email" th:value="${user.email}">
-                <button type="submit">Update</button>
-            </form>
-
-            <form class="action-form" th:action="@{/admin/users/delete}" method="post">
-                <input type="hidden" name="id" th:value="${user.id}">
-                <button type="submit">Delete</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-<form th:action="@{/logout}" method="post">
-    <button type="submit">Logout</button>
-</form>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
