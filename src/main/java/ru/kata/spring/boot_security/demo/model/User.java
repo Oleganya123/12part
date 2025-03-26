@@ -34,6 +34,8 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
 
+    @NotBlank(message = "Пароль не может быть пустым")
+    @Size(min = 4, message = "Пароль должен быть не менее 4 символов")
     private String password;
 
     @ManyToMany(fetch = FetchType.LAZY)
