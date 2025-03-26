@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>User Page</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .badge-admin { background-color: #dc3545; }
+        .badge-user { background-color: #007bff; }
+    </style>
+</head>
+<body>
+<div id="adminPanel" class="bg-light p-3 mb-4" style="display: none;">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div>
+            <a href="user.html" class="btn btn-outline-primary">User Page</a>
+            <a href="admin.html" class="btn btn-outline-dark">Admin Panel</a>
+        </div>
+        <button id="logoutBtn" class="btn btn-danger">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <h1>User Information</h1>
+    <div id="userInfo" class="mt-4">
+
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+
+    (async function checkAuth() {
+        const auth = localStorage.getItem('auth');
+        if (!auth) {
+            window.location.replace('login.html');
+            return false;
+        }
+
+        try {
+            const response = await fetch('/api/user/current', {
+                headers: { 'Authorization': 'Basic ' + auth }
+            });
+
+            if (!response.ok) {
+                localStorage.removeItem('auth');
+                window.location.replace('login.html');
+                return false;
+            }
+
+            const user = await response.json();
+            const isAdmin = user.roles.some(r => r.name === 'ROLE_ADMIN' || r.name === 'ADMIN');
+
+            if (isAdmin) {
+                document.getElementById('adminPanel').style.display = 'block';
+            }
+
+            renderUserInfo(user);
+            return true;
+        } catch (error) {
+            localStorage.removeItem('auth');
+            window.location.replace('login.html');
+            return false;
+        }
+    })();
+
+    function renderUserInfo(user) {
+        const roles = user.roles.map(role =>
+            `<span class="badge ${role.name.includes('ADMIN') ? 'badge-admin' : 'badge-user'}">
+            ${role.name.replace('ROLE_', '')}
+        </span>`
+        ).join(' ');
+
+        const userInfo = `
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">${user.name} ${user.lastName}</h5>
+                <p class="card-text">
+                    <strong>Email:</strong> ${user.email}<br>
+                    <strong>Age:</strong> ${user.age}<br>
+                    <strong>Roles:</strong> ${roles}
+                </p>
+            </div>
+        </div>
+    `;
+
+        document.getElementById('userInfo').innerHTML = userInfo;
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        const auth = localStorage.getItem('auth');
+        fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Authorization': 'Basic ' + auth }
+        }).finally(() => {
+            localStorage.removeItem('auth');
+            window.location.replace('login.html');
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .container { max-width: 400px; }
+  </style>
+</head>
+<body>
+<div class="container mt-5">
+  <h1 class="text-center mb-4">Please Sign in</h1>
+  <div id="errorAlert" class="alert alert-danger" style="display: none;"></div>
+
+  <form id="loginForm">
+    <div class="form-group mb-3">
+      <label for="email" class="form-label">Email:</label>
+      <input type="email" id="email" class="form-control" required value="admin@mail.ru">
+    </div>
+    <div class="form-group mb-3">
+      <label for="password" class="form-label">Password:</label>
+      <input type="password" id="password" class="form-control" required value="admin">
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Sign in</button>
+  </form>
+</div>
+
+<script>
+  (async function checkAuth() {
+    const auth = localStorage.getItem('auth');
+    if (!auth) return;
+
+    try {
+      const response = await fetch('/api/user/current', {
+        headers: { 'Authorization': 'Basic ' + auth }
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        const isAdmin = user.roles.some(r => r.name === 'ROLE_ADMIN' || r.name === 'ADMIN');
+        window.location.href = isAdmin ? 'admin.html' : 'user.html';
+      } else {
+        localStorage.removeItem('auth');
+      }
+    } catch (error) {
+      localStorage.removeItem('auth');
+    }
+  })();
+
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const auth = btoa(email + ':' + password);
+
+    document.getElementById('errorAlert').style.display = 'none';
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': 'Basic ' + auth
+        },
+        body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Login failed');
+      }
+
+      localStorage.setItem('auth', auth);
+
+      const userResponse = await fetch('/api/user/current', {
+        headers: { 'Authorization': 'Basic ' + auth }
+      });
+
+      if (!userResponse.ok) throw new Error('Failed to get user data');
+
+      const user = await userResponse.json();
+      const isAdmin = user.roles.some(r => r.name === 'ROLE_ADMIN' || r.name === 'ADMIN');
+      window.location.href = isAdmin ? 'admin.html' : 'user.html';
+
+    } catch (error) {
+      console.error('Login error:', error);
+      const errorAlert = document.getElementById('errorAlert');
+      errorAlert.textContent = error.message.includes('<!DOCTYPE')
+              ? 'Authentication error'
+              : error.message;
+      errorAlert.style.display = 'block';
+      document.getElementById('password').value = '';
+    }
+  });
+</script>
+</body>
+</html>
