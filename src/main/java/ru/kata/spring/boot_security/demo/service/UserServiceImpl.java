@@ -16,16 +16,18 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public  class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
+    public UserServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -49,40 +51,52 @@ public  class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-
-    @Override
-    @Transactional
-    public User addUser(User user) {
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            Role userRole = roleRepository.findByName("ROLE_USER")
-                    .orElseThrow(() -> new RuntimeException("Role USER not found"));
-            user.setRoles(Set.of(userRole));
-        }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
-    }
-
-
-    @Override
-    @Transactional
-    public User updateUser(User user, String newPassword) {
-        if (newPassword != null && !newPassword.isEmpty()) {
-            user.setPassword(passwordEncoder.encode(newPassword));
-        }
-
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            User existingUser = userRepository.findById(user.getId()).orElseThrow();
-            user.setRoles(existingUser.getRoles());
-        }
-
-        return userRepository.save(user);
-    }
-
     @Transactional
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Role> getAllRoles() {
+        return roleRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Role findRoleByName(String name) {
+        return roleRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+    }
+
+    @Override
+    @Transactional
+    public User addUser(User user, Set<Role> roles) {
+        if (roles == null || roles.isEmpty()) {
+            roles = Set.of(roleRepository.findByName("ROLE_USER")
+                    .orElseThrow(() -> new RuntimeException("Role USER not found")));
+        }
+        user.setRoles(roles);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public User updateUser(User user, String newPassword, Set<Role> inputRoles) {
+        if (newPassword != null && !newPassword.isEmpty()) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+        } else {
+            User existingUser = userRepository.findById(user.getId()).orElseThrow();
+            user.setPassword(existingUser.getPassword());
+        }
+
+        Set<Role> roles = (inputRoles == null || inputRoles.isEmpty())
+                ? userRepository.findById(user.getId()).orElseThrow().getRoles()
+                : inputRoles;
+
+        user.setRoles(roles);
+        return userRepository.save(user);
+    }
 }
