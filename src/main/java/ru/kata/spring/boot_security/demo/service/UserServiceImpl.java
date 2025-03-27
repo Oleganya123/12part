@@ -74,8 +74,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public User addUser(User user, Set<Role> roles) {
         if (roles == null || roles.isEmpty()) {
-            roles = Set.of(roleRepository.findByName("ROLE_USER")
-                    .orElseThrow(() -> new RuntimeException("Role USER not found")));
+            throw new IllegalArgumentException("User must have at least one role");
         }
         user.setRoles(roles);
         user.setPassword(passwordEncoder.encode(user.getPassword()));

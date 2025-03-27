@@ -57,6 +57,9 @@ public class UserRestController {
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             throw new IllegalArgumentException("Password cannot be empty");
         }
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            throw new IllegalArgumentException("Select at least one role");
+        }
         return ResponseEntity.ok(userService.addUser(user, user.getRoles()));
     }
 
